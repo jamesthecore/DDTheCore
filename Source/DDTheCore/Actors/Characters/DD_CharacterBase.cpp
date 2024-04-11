@@ -2,6 +2,33 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Libraries/DD_NetLibrary.h"
+
+void ADD_CharacterBase::Server_AddTag_Implementation(const FName& Tag)
+{
+	if (UDD_NetLibrary::IsServer(this))
+	{
+		Multicast_AddTag(Tag);
+	}
+}
+
+void ADD_CharacterBase::Multicast_AddTag_Implementation(const FName& Tag)
+{
+	Tags.AddUnique(Tag);
+}
+
+void ADD_CharacterBase::Server_RemoveTag_Implementation(const FName& Tag)
+{
+	if (UDD_NetLibrary::IsServer(this))
+	{
+		Multicast_RemoveTag(Tag);
+	}
+}
+
+void ADD_CharacterBase::Multicast_RemoveTag_Implementation(const FName& Tag)
+{
+	Tags.Remove(Tag);
+}
 
 void ADD_CharacterBase::BeginPlay()
 {

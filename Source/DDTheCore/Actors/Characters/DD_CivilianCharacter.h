@@ -71,11 +71,12 @@ private:
 	UFUNCTION(Server, Reliable)
 		void Server_CancelInteract(UDD_CompInteractable* OtherInteractable);
 	UFUNCTION(NetMulticast, Unreliable)
-		void Multicast_PlayAnimation(UAnimMontage* AnimationToPlay);
+		void Multicast_PlayAnimation(UAnimMontage* AnimationToPlay, const bool bStop);
 
 	UFUNCTION()
 		void OnRep_CivilianState();
 
 	void OnServerInteractionDetected(AActor* Interactor);
 	void GeneratorServerStarted(AActor* Actor);
+	void GeneratorServerStop(AActor* Actor);
 };

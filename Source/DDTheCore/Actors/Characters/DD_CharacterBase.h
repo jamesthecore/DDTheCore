@@ -13,6 +13,16 @@ class ADD_CharacterBase : public ACharacter
 {
 	GENERATED_BODY()
 
+public:
+	UFUNCTION(Server, Reliable)
+		void Server_AddTag(const FName& Tag);
+	UFUNCTION(Server, Reliable)
+		void Server_RemoveTag(const FName& Tag);
+	UFUNCTION(NetMulticast, Unreliable)
+		void Multicast_AddTag(const FName& Tag);
+	UFUNCTION(NetMulticast, Unreliable)
+		void Multicast_RemoveTag(const FName& Tag);
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		UInputAction* LookAction = nullptr;

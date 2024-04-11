@@ -52,7 +52,4 @@ void UDD_CompInteract::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 		CurrentInteractedActor = nullptr;
 		InteractionDetected.Broadcast(nullptr);
 	}
-	
-	DrawDebugLine(GetWorld(), StartPosition, EndPosition, FColor::Red, false, 1, 0, 1);
-	
 }

@@ -7,7 +7,7 @@
 enum class EDD_PlayerType : uint8;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FScoreUpdated, int32, Score);
-DECLARE_MULTICAST_DELEGATE_OneParam(FGeneratorServerStarted, AActor*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FGeneratorServer, AActor*);
 
 UCLASS()
 class ADD_GameStateMainGame : public AGameState
@@ -15,7 +15,8 @@ class ADD_GameStateMainGame : public AGameState
 	GENERATED_BODY()
 
 public:
-	FGeneratorServerStarted GeneratorServerStarted;
+	FGeneratorServer GeneratorServerStarted;
+	FGeneratorServer GeneratorServerStop;
 
 	UPROPERTY(BlueprintAssignable)
 		FScoreUpdated AssassinScoreUpdated;

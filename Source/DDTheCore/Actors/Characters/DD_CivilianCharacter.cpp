@@ -1,16 +1,21 @@
 #include "Actors/Characters/DD_CivilianCharacter.h"
-
-#include "EnhancedInputComponent.h"
-#include "Camera/CameraComponent.h"
-#include "GameFramework/SpringArmComponent.h"
-#include "InputActionValue.h"
-#include "UnrealNetwork.h"
 #include "Actors/GameState/DD_GameStateMainGame.h"
+#include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/DD_CompInteract.h"
 #include "Components/DD_CompInteractable.h"
+#include "EnhancedInputComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "InputActionValue.h"
 #include "Kismet/GameplayStatics.h"
 #include "Libraries/DD_NetLibrary.h"
+#include "UnrealNetwork.h"
+#include "Libraries/DD_BaseLibrary.h"
+
+namespace ADD_CivilianCharacter_Consts
+{
+	static const FName BlockTag = TEXT("Blocked");
+}
 
 bool ADD_CivilianCharacter::IsInjured() const
 {
@@ -91,6 +96,7 @@ void ADD_CivilianCharacter::BeginPlay()
 		if (ADD_GameStateMainGame* GameState = Cast<ADD_GameStateMainGame>(UGameplayStatics::GetGameState(this)))
 		{
 			GameState->GeneratorServerStarted.AddUObject(this, &ADD_CivilianCharacter::GeneratorServerStarted);
+			GameState->GeneratorServerStop.AddUObject(this, &ADD_CivilianCharacter::GeneratorServerStop);
 		}
 	}
 
@@ -115,6 +121,9 @@ void ADD_CivilianCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 
 void ADD_CivilianCharacter::Move(const FInputActionValue& Value)
 {
+	if (ActorHasTag(ADD_CivilianCharacter_Consts::BlockTag))
+		return;
+
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 	const FRotator Rotation = Controller->GetControlRotation();
 	const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -191,20 +200,42 @@ void ADD_CivilianCharacter::GeneratorServerStarted(AActor* Actor)
 	if (Actor != this)
 		return;
 
-	Multicast_PlayAnimation(Burpee);
+	Server_AddTag(ADD_CivilianCharacter_Consts::BlockTag);
+	constexpr bool bStopAnimation = false;
+	Multicast_PlayAnimation(Burpee, bStopAnimation);
 }
 
-void ADD_CivilianCharacter::Multicast_PlayAnimation_Implementation(UAnimMontage* AnimationToPlay)
+void ADD_CivilianCharacter::GeneratorServerStop(AActor* Actor)
+{
+	if (Actor != nullptr && Actor != this)
+		return;
+
+	Server_RemoveTag(ADD_CivilianCharacter_Consts::BlockTag);
+	constexpr bool bStopAnimation = true;
+	Multicast_PlayAnimation(Burpee, bStopAnimation);
+}
+
+void ADD_CivilianCharacter::Multicast_PlayAnimation_Implementation(UAnimMontage* AnimationToPlay, const bool bStop)
 {
 	if (AnimationToPlay)
 	{
-		PlayAnimMontage(AnimationToPlay, 1.f);
+		if (bStop)
+		{
+			StopAnimMontage(AnimationToPlay);			
+		}
+		else
+		{
+			PlayAnimMontage(AnimationToPlay, 1.f);
+		}
 	}
 }
 
 void ADD_CivilianCharacter::OnRep_CivilianState()
 {
-	FString s;
+	if (UDD_CompInteractable* OtherCompInteractable = CompInteract ? UDD_BaseLibrary::GetCompInteractable(CompInteract->GetInteractObject()) : nullptr)
+	{
+		Server_CancelInteract(OtherCompInteractable);
+	}
 }
 
 void ADD_CivilianCharacter::OnServerInteractionDetected(AActor* Interactor)
