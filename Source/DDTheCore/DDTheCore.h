@@ -6,6 +6,8 @@ UENUM(BlueprintType)
 enum class EDD_PlayerType : uint8
 {
 	Assassin,
-	Civilian
+	Civilian,
+	None,
+	Prueba
 };
 
