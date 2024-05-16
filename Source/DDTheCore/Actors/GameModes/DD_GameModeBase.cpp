@@ -35,6 +35,12 @@ void ADD_GameModeBase::OnServerUpdated(APlayerController* PlayerController)
 		return;
 
 	const EDD_PlayerType TypeToSpawn = OnlineGameInstanceSubsystem->GetSharedPlayerInformation().PlayerType;
+	if (TypeToSpawn == EDD_PlayerType::None)
+	{
+		UGameplayStatics::OpenLevel(this, "MainMenu");
+		return;
+	}
+
 	const AActor* FoundStart = GetPlayerStart(TypeToSpawn);
 	if (!FoundStart)
 	{
@@ -44,6 +50,7 @@ void ADD_GameModeBase::OnServerUpdated(APlayerController* PlayerController)
 
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
 	if (ACharacter* SpawnedCharacter = GetWorld()->SpawnActor<ACharacter>(CustomSpawnData[TypeToSpawn].PawnToSpawn, FoundStart->GetActorLocation(), FoundStart->GetActorRotation(), Params))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Spawned"));
